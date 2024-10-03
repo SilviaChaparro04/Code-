@@ -1,0 +1,118 @@
+# borra variables anteriores
+rm(list=ls())
+# lee datos de wavelet desde archivo .csv
+data <- read.csv("D:/DOCUMENTOS USUARIO/Desktop/EMGDATA2.csv", header = FALSE)
+
+# revisamos que los que esten vacios tomen un cero
+data[is.na(data)] <- 0
+# armamos un marco de datos
+data <- data.frame(sapply(data, function(x) as.numeric(as.character(x))))
+data[is.na(data)] <- 0
+# visualiza los primeros datos
+head(data)
+str(data)
+
+# asigna nombre a clases
+names(data) <- c('clase','v1','v2','v3','v4','v5','v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19','v20','v21','v22','v23','v24') # coloca el nombre como columna
+colSums(is.na(data))
+# muestra resumen
+summary(data)
+# a cada conjunto de datos le asiga una clase
+pairs(data[2:23], col=data$clase)
+
+# realiza la codificaci?n de clase (0 1)
+library(dummies)
+data_dm <- dummy.data.frame(data=data, names="clase", sep="_")
+str(data_dm)
+
+# normaliza los datos
+
+normaliza <- function(x) {return ((x-min(x))/(max(x)-min(x)))}
+
+data_norm <- as.data.frame(lapply(data_dm, normaliza))
+
+# muestra resumen de datos
+summary(data_norm)
+
+
+set.seed(3141592) #necesario si se quiere reproducir de nuevo el mismo c?digo y obtener los mimsos resultados
+
+# divide el conjunto de datos en train y test
+index <- sample(nrow(data_norm), round(0.75*nrow(data_norm))) # muestrea aleatoriamente
+train <- data_norm[index,] # crea train a partir del indice de la muestra
+test <- data_norm[-index,] # crea test a partir del resto de la muestra
+head(train)
+
+
+# si hay casillas sin valor les asigna 0
+train[is.na(train)] <- 0
+test[is.na(test)] <- 0
+
+
+# modelo de red neuronal
+set.seed(3141592)
+library(neuralnet)
+ann_model <- neuralnet(clase_1+clase_2+clase_3+clase_4~., data=train, hidden=c(20, 10, 10), linear.output = FALSE, rep =2000) #100 80 30 30rep### 100 80 40 20rep
+
+plot(ann_model, rep="best")
+
+
+# computa los datos de prueba
+ann_pred <- compute(ann_model,test[,5:28])
+head(ann_pred$net.result)
+
+# redondea para saber que clase predijo
+ann_pred_round <- as.data.frame(round(ann_pred$net.result))
+head(ann_pred_round, 10)
+
+predic<-max.col(ann_pred_round)
+head(predic, 100)
+
+test_res <- max.col(test[,1:4])
+head(test_res, 100)
+
+
+# se llama la libreria para poder usar la funci?n
+library(nnet)
+library(gmodels)
+library(caret)
+
+CrossTable(x=test_res, y=predic)
+
+# matriz de confusi?n
+u <- union(predic, test_res)
+t <- table(factor(predic, u), factor(test_res, u))
+confusionMatrix(t)
+
+
+
+
+
+#Cross validation
+
+set.seed(3141592)
+myfolds <- createFolds(data$clase, k=10) # cu?ntas veces desea los subconjuntos de entrenamiento y prueba a partir de la base de datos original
+
+CV_ANN <- function(x)
+{
+  train <- data_norm[-x,]
+  test <- data_norm[x,]
+  ann_model <- neuralnet(clase_1+clase_2+clase_3+clase_4~., data=train, hidden=c(20, 10, 10), linear.output = FALSE, rep =1000, learningrate.factor = list(minus = 0.001, plus = 100))
+  
+  ann_pred <- compute(ann_model,test[,5:28])
+  ann_pred_round <- as.data.frame(round(ann_pred$net.result))
+  predic <- max.col(ann_pred_round)
+  test_res <- max.col(test[,1:4])
+  u <- union(predic, test_res)
+  t <- table(factor(predic, u), factor(test_res, u))
+  myconfusion <-confusionMatrix(t)
+  
+  return (myconfusion$overall[1:2]) # el rango [1:2] corresponde a los ?ndices donde se encuentran las variables Accuracy y Kappa dentro de nuestra matriz de confusi?n
+}
+
+CV_result <- lapply(myfolds, CV_ANN)
+CV_result_DF <-as.data.frame(CV_result)
+CV_result_DF
+
+rowMeans(CV_result_DF)
+plot(ann_model, rep="best")
