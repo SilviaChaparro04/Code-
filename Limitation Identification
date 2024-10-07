@@ -1,55 +1,57 @@
-# borra variables anteriores
+# deletes previous variables
 rm(list=ls())
-# lee datos de wavelet desde archivo .csv
-data <- read.csv("D:/DOCUMENTOS USUARIO/Desktop/EMGDATA2.csv", header = FALSE)
+# reads wavelet data from file .csv
+data <- read.csv("D:/DOCUMENTS USER/Desktop/EMGDATA2.csv", header = FALSE)
 
-# revisamos que los que esten vacios tomen un cero
+# we check that the empty ones take a zero
 data[is.na(data)] <- 0
-# armamos un marco de datos
+
+# we put together a data framework
 data <- data.frame(sapply(data, function(x) as.numeric(as.character(x))))
 data[is.na(data)] <- 0
-# visualiza los primeros datos
+
+# view the first data
 head(data)
 str(data)
 
-# asigna nombre a clases
+# assigns names to classes
 names(data) <- c('clase','v1','v2','v3','v4','v5','v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16','v17','v18','v19','v20','v21','v22','v23','v24') # coloca el nombre como columna
 colSums(is.na(data))
-# muestra resumen
+
+# sample summary
 summary(data)
-# a cada conjunto de datos le asiga una clase
+
+# to each dataset assign a class to each dataset
 pairs(data[2:23], col=data$clase)
 
-# realiza la codificaci?n de clase (0 1)
+# class coding is carried out (0 1)
 library(dummies)
 data_dm <- dummy.data.frame(data=data, names="clase", sep="_")
 str(data_dm)
 
-# normaliza los datos
-
+# normalises the data
 normaliza <- function(x) {return ((x-min(x))/(max(x)-min(x)))}
-
 data_norm <- as.data.frame(lapply(data_dm, normaliza))
 
-# muestra resumen de datos
+# sample summary data
 summary(data_norm)
 
 
-set.seed(3141592) #necesario si se quiere reproducir de nuevo el mismo c?digo y obtener los mimsos resultados
+set.seed(3141592) #necessary if the same code is to be reproduced again and the same results are to be obtained.
 
-# divide el conjunto de datos en train y test
-index <- sample(nrow(data_norm), round(0.75*nrow(data_norm))) # muestrea aleatoriamente
-train <- data_norm[index,] # crea train a partir del indice de la muestra
-test <- data_norm[-index,] # crea test a partir del resto de la muestra
+# divides the dataset into train and test
+index <- sample(nrow(data_norm), round(0.75*nrow(data_norm))) # randomly sampled
+train <- data_norm[index,] # creates train from the sample index
+test <- data_norm[-index,] # creates test from the rest of the sample
 head(train)
 
 
-# si hay casillas sin valor les asigna 0
+# if there are cells with no value it assigns them 0
 train[is.na(train)] <- 0
 test[is.na(test)] <- 0
 
 
-# modelo de red neuronal
+# neural network model
 set.seed(3141592)
 library(neuralnet)
 ann_model <- neuralnet(clase_1+clase_2+clase_3+clase_4~., data=train, hidden=c(20, 10, 10), linear.output = FALSE, rep =2000) #100 80 30 30rep### 100 80 40 20rep
@@ -57,11 +59,11 @@ ann_model <- neuralnet(clase_1+clase_2+clase_3+clase_4~., data=train, hidden=c(2
 plot(ann_model, rep="best")
 
 
-# computa los datos de prueba
+# computes test data
 ann_pred <- compute(ann_model,test[,5:28])
 head(ann_pred$net.result)
 
-# redondea para saber que clase predijo
+# round up to find out which class he predicted
 ann_pred_round <- as.data.frame(round(ann_pred$net.result))
 head(ann_pred_round, 10)
 
@@ -72,26 +74,23 @@ test_res <- max.col(test[,1:4])
 head(test_res, 100)
 
 
-# se llama la libreria para poder usar la funci?n
+# library is called in order to be able to use the function
 library(nnet)
 library(gmodels)
 library(caret)
 
 CrossTable(x=test_res, y=predic)
 
-# matriz de confusi?n
+# confusion matrix
 u <- union(predic, test_res)
 t <- table(factor(predic, u), factor(test_res, u))
 confusionMatrix(t)
 
 
-
-
-
 #Cross validation
 
 set.seed(3141592)
-myfolds <- createFolds(data$clase, k=10) # cu?ntas veces desea los subconjuntos de entrenamiento y prueba a partir de la base de datos original
+myfolds <- createFolds(data$clase, k=10) # how many times you want the training and test subsets from the original database
 
 CV_ANN <- function(x)
 {
@@ -107,7 +106,7 @@ CV_ANN <- function(x)
   t <- table(factor(predic, u), factor(test_res, u))
   myconfusion <-confusionMatrix(t)
   
-  return (myconfusion$overall[1:2]) # el rango [1:2] corresponde a los ?ndices donde se encuentran las variables Accuracy y Kappa dentro de nuestra matriz de confusi?n
+  return (myconfusion$overall[1:2]) # the range [1:2] corresponds to the indexes where the Accuracy and Kappa variables are located in our confusion matrix.
 }
 
 CV_result <- lapply(myfolds, CV_ANN)
