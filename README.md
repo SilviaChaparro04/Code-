@@ -2,6 +2,9 @@
 
 <p>
 To reproduce the results obtained in the article ‘Mobility Deficit Identification and Compensation through an Artificial Neural Network and Adaptive Controller Design during Gait’, you should consider the following procedure:
+- Pre-processing and proccesing
+- Prediction
+
 
 ## Codes 
 
@@ -16,7 +19,7 @@ The code used for the pre-processing and processing of EMG signals was performed
 Values v1 to v24 correspond to the data provided by the wavelet transform referring to each class: normal, constraint 1, constraint 2, constraint 3.
 
 
-###### NOTE: The complete code can be found in the ‘limitation identification’ section.
+###### NOTE: The complete code can be found in the ‘limitation identification’ section. Also, consider in line #4 of the code, the exact location where you have downloaded the .csv file.
 
 
 If you need to use this information, please cite us like:
