@@ -16,7 +16,7 @@ The code used for the pre-processing and processing of EMG signals was performed
 ### Prediction:
 
 <p> 
-Values v1 to v24 correspond to the data provided by the wavelet transform referring to each class: normal, constraint 1, constraint 2, constraint 3.
+Values v1 to v24 correspond to the data provided by the Wavelet Transform referring to each class: normal, constraint 1, constraint 2, constraint 3.
 
 
 ###### NOTE: The complete code can be found in the ‘limitation identification’ section. Also, consider in line #4 of the code, the exact location where you have downloaded the .csv file.
