@@ -1,7 +1,7 @@
 # deletes previous variables
 rm(list=ls())
 # reads wavelet data from file .csv
-data <- read.csv("D:/DOCUMENTS USER/Desktop/EMGDATA2.csv", header = FALSE)
+data <- read.csv("locationfile.csv", header = FALSE)
 
 # we check that the empty ones take a zero
 data[is.na(data)] <- 0
