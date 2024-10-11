@@ -1,6 +1,22 @@
+# Code to identify the type of gait limitation
+
+<p>
+To reproduce the results obtained in the article ‘Mobility Deficit Identification and Compensation through an Artificial Neural Network and Adaptive Controller Design during Gait’, you should consider the following procedure:
+
+## Codes 
+
+### Pre-processing and proccesing:
+
+<p> 
+The code used for the pre-processing and processing of EMG signals was performed in R software using the following libraries: dummies, neuralnet, library(nnet), library(gmodels) and library(caret).
+
+### Prediction:
+
+<p> 
+Values v1 to v24 correspond to the data provided by the wavelet transform referring to each class: normal, constraint 1, constraint 2, constraint 3.
 
 
-### NOTE: The complete code can be found in the ‘limitation identification’ section.
+###### NOTE: The complete code can be found in the ‘limitation identification’ section.
 
 
 If you need to use this information, please cite us like:
